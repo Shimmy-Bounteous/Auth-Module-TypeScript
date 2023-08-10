@@ -11,16 +11,16 @@ import User from '../types/userType';
 import { RequestBodyForLogin, RequestBodyWithDOB, RequestBodyWithoutDOB } from '../types/runtypes';
 
 // Sign-Up a new user
-const signup = async(req: Request<{}, {}, User>, res: Response) => {
+const signup = async (req: Request<{}, {}, User>, res: Response) => {
     try {
         // Checking if req.body is of the expected type
-        if(RequestBodyWithDOB.guard(req.body) || RequestBodyWithoutDOB.guard(req.body)){
-            const { name, dob, phoneNo, email, password }: User= req.body;
-            
+        if (RequestBodyWithDOB.guard(req.body) || RequestBodyWithoutDOB.guard(req.body)) {
+            const { name, dob, phoneNo, email, password }: User = req.body;
+
             // regex to validate email
             let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
             if (!emailRegex.test(email)) throw new Error("Invalid email");
-    
+
             const d = (dob);
 
             // check if existing user
@@ -50,12 +50,12 @@ const signup = async(req: Request<{}, {}, User>, res: Response) => {
                 });
             }
         }
-        else{
-            return res.status(400).json({success: false, message: 'Invalid Request Body'});
+        else {
+            return res.status(400).json({ success: false, message: 'Invalid Request Body' });
         }
     }
     catch (error) {
-        if(error instanceof Error){
+        if (error instanceof Error) {
             return res.status(500).json({ success: false, message: error.message });
         }
     }
@@ -63,15 +63,15 @@ const signup = async(req: Request<{}, {}, User>, res: Response) => {
 }
 
 // login user
-const login = async(req: Request<{}, {}, User>, res: Response) => {
+const login = async (req: Request<{}, {}, User>, res: Response) => {
     try {
-        if(RequestBodyForLogin.guard(req.body)){
+        if (RequestBodyForLogin.guard(req.body)) {
             const { email, password } = req.body;
-    
+
             // regex to validate email
             let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
             if (!emailRegex.test(email)) throw new Error("Invalid email");
-    
+
             // Check if user exits
             const user: User | null = await UsersDB.findOne({ "email": email });
             if (!user) {
@@ -86,11 +86,11 @@ const login = async(req: Request<{}, {}, User>, res: Response) => {
                     else {
                         const JWT_KEY = process.env.JWT_KEY;
 
-                        if(!JWT_KEY){
+                        if (!JWT_KEY) {
                             console.log('JWT_KEY not available!');
-                            return res.status(500).json({success: false, message: 'Server error. Please try again later.'})
+                            return res.status(500).json({ success: false, message: 'Server error. Please try again later.' })
                         }
-                        else{
+                        else {
                             // Generating access token
                             const accessToken = jwt.sign(
                                 {
@@ -99,7 +99,7 @@ const login = async(req: Request<{}, {}, User>, res: Response) => {
                                 JWT_KEY,
                                 { expiresIn: '1hr' }
                             );
-        
+
                             // Generating refresh token
                             const refreshToken = jwt.sign(
                                 {
@@ -108,14 +108,14 @@ const login = async(req: Request<{}, {}, User>, res: Response) => {
                                 JWT_KEY,
                                 { expiresIn: '2h' }
                             );
-        
+
                             // Setting refresh token in response cookie
                             res.cookie('jwt', refreshToken,
                                 {
                                     httpOnly: true,
                                     secure: true
                                 });
-        
+
                             // console.log();
                             return res.status(201).json({ success: true, message: 'Login Successfull', accessToken });
                         }
@@ -123,12 +123,12 @@ const login = async(req: Request<{}, {}, User>, res: Response) => {
                 });
             }
         }
-        else{
-            return res.status(400).json({success: false, message: 'Invalid Request Body'});
+        else {
+            return res.status(400).json({ success: false, message: 'Invalid Request Body' });
         }
     }
     catch (error) {
-        if(error instanceof Error){
+        if (error instanceof Error) {
             return res.status(500).json({ success: false, message: error.message });
         }
     }
@@ -144,31 +144,31 @@ const refresh = async (req: Request, res: Response) => {
         const refreshToken = req.cookies.jwt;
 
         const JWT_KEY = process.env.JWT_KEY;
-        if(!JWT_KEY){
+        if (!JWT_KEY) {
             console.log('JWT_KEY not available!');
-            return res.status(500).json({success: false, message: 'Server error. Please try again later.'})
+            return res.status(500).json({ success: false, message: 'Server error. Please try again later.' })
         }
-        else{
-            const user = jwt.verify(refreshToken, JWT_KEY? JWT_KEY?.toString(): "");
+        else {
+            const user = jwt.verify(refreshToken, JWT_KEY ? JWT_KEY?.toString() : "");
             console.log(user);
-            
+
             type d = {
                 email: string;
             }
-            
+
             jwt.verify(
                 refreshToken, JWT_KEY, async (err: VerifyErrors | null, decoded: JwtPayload | string | undefined) => {
                     if (err) {
                         res.status(403).json({ success: false, message: 'Invalid Refresh Token' });
                     }
-                    if(typeof decoded != undefined){
+                    if (typeof decoded != undefined) {
                         const accessToken = jwt.sign(
                             {
                                 email: decoded,
                             },
                             JWT_KEY,
                             { expiresIn: '1hr' }
-                        ); 
+                        );
                         res.status(201).json({ success: true, accessToken });
                     }
                 }
@@ -176,7 +176,7 @@ const refresh = async (req: Request, res: Response) => {
         }
     }
     catch (error) {
-        if(error instanceof Error){
+        if (error instanceof Error) {
             return res.status(500).json({ success: false, message: error.message });
         }
     }

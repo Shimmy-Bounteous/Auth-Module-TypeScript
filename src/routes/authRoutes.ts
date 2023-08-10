@@ -1,4 +1,4 @@
-import express, {Router} from 'express';
+import express, { Router } from 'express';
 const router = express.Router();
 
 import {
@@ -9,8 +9,9 @@ import {
 
 // Middleware to validate password
 import validatePassword from '../middleware/passwordValidator';
+import dateParser from '../middleware/dateParser';
 
-router.post('/signup', validatePassword, signup);
+router.post('/signup', dateParser, validatePassword, signup);
 router.post('/login', login);
 router.post('/refresh', refresh);
 
