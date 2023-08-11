@@ -11,7 +11,7 @@ import User from '../types/userType';
 import { RequestBodyForSignup, RequestBodyForLogin } from '../types/runtypes';
 
 // Sign-Up a new user
-const signup = async (req: Request<{}, {}, User>, res: Response) => {
+const signup = async (req: Request<{}, {}, User>, res: Response): Promise<void> => {
     try {
         // Checking if req.body is of the expected type
         if (RequestBodyForSignup.guard(req.body)) {
@@ -24,7 +24,7 @@ const signup = async (req: Request<{}, {}, User>, res: Response) => {
             // check if existing user
             const existingUser: User | null = await UsersDB.findOne({ email });
             if (existingUser) {
-                return res.status(409).json({ success: false, message: 'Email already exists' });
+                res.status(409).json({ success: false, message: 'Email already exists' });
             }
             else {
                 // encrpyt the password
@@ -49,19 +49,19 @@ const signup = async (req: Request<{}, {}, User>, res: Response) => {
             }
         }
         else {
-            return res.status(400).json({ success: false, message: 'Invalid Request Body' });
+            res.status(400).json({ success: false, message: 'Invalid Request Body' });
         }
     }
     catch (error) {
         if (error instanceof Error) {
-            return res.status(500).json({ success: false, message: error.message });
+            res.status(500).json({ success: false, message: error.message });
         }
     }
 
 }
 
 // login user
-const login = async (req: Request<{}, {}, User>, res: Response) => {
+const login = async (req: Request<{}, {}, User>, res: Response): Promise<void> => {
     try {
         if (RequestBodyForLogin.guard(req.body)) {
             const { email, password } = req.body;
@@ -73,7 +73,7 @@ const login = async (req: Request<{}, {}, User>, res: Response) => {
             // Check if user exits
             const user: User | null = await UsersDB.findOne({ "email": email });
             if (!user) {
-                return res.status(401).json({ success: false, message: 'Invalid User Credentials' });
+                res.status(401).json({ success: false, message: 'Invalid User Credentials' });
             }
             else {
                 // validate password
@@ -122,29 +122,29 @@ const login = async (req: Request<{}, {}, User>, res: Response) => {
             }
         }
         else {
-            return res.status(400).json({ success: false, message: 'Invalid Request Body' });
+            res.status(400).json({ success: false, message: 'Invalid Request Body' });
         }
     }
     catch (error) {
         if (error instanceof Error) {
-            return res.status(500).json({ success: false, message: error.message });
+            res.status(500).json({ success: false, message: error.message });
         }
     }
 }
 
 // Generate new access token upon refresh token's expiry
-const refresh = async (req: Request, res: Response) => {
+const refresh = async (req: Request, res: Response): Promise<void> => {
     try {
         // If cookies and refresh token doesn't exist
         if (!req.cookies?.jwt) {
-            return res.status(403).json({ success: false, message: 'Unauthorized' });
+            res.status(403).json({ success: false, message: 'Unauthorized' });
         }
         const refreshToken = req.cookies.jwt;
 
         const JWT_KEY = process.env.JWT_KEY;
         if (!JWT_KEY) {
             console.log('JWT_KEY not available!');
-            return res.status(500).json({ success: false, message: 'Server error. Please try again later.' })
+            res.status(500).json({ success: false, message: 'Server error. Please try again later.' })
         }
         else {
             const user = jwt.verify(refreshToken, JWT_KEY ? JWT_KEY?.toString() : "");
@@ -175,7 +175,7 @@ const refresh = async (req: Request, res: Response) => {
     }
     catch (error) {
         if (error instanceof Error) {
-            return res.status(500).json({ success: false, message: error.message });
+            res.status(500).json({ success: false, message: error.message });
         }
     }
 }
