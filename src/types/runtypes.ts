@@ -1,17 +1,9 @@
-import { String, Number, InstanceOf, Record } from 'runtypes';
+import { String, Number, InstanceOf, Record, Optional } from 'runtypes';
 
 // Runtype for request body with DOB
-const RequestBodyWithDOB = Record({
+const RequestBodyForSignup = Record({
     name: String,
-    dob: InstanceOf(Date),
-    phoneNo: Number,
-    email: String,
-    password: String
-});
-
-// Runtype for request body without DOB
-const RequestBodyWithoutDOB = Record({
-    name: String,
+    dob: Optional(InstanceOf(Date)),
     phoneNo: Number,
     email: String,
     password: String
@@ -23,4 +15,4 @@ const RequestBodyForLogin = Record({
     password: String
 });
 
-export {RequestBodyWithDOB, RequestBodyWithoutDOB, RequestBodyForLogin};
+export { RequestBodyForSignup, RequestBodyForLogin };

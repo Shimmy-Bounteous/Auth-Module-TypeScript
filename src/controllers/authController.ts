@@ -8,20 +8,18 @@ import mongoose from 'mongoose';
 import User from '../types/userType';
 
 // Custom Runtypes
-import { RequestBodyForLogin, RequestBodyWithDOB, RequestBodyWithoutDOB } from '../types/runtypes';
+import { RequestBodyForSignup, RequestBodyForLogin } from '../types/runtypes';
 
 // Sign-Up a new user
 const signup = async (req: Request<{}, {}, User>, res: Response) => {
     try {
         // Checking if req.body is of the expected type
-        if (RequestBodyWithDOB.guard(req.body) || RequestBodyWithoutDOB.guard(req.body)) {
+        if (RequestBodyForSignup.guard(req.body)) {
             const { name, dob, phoneNo, email, password }: User = req.body;
 
             // regex to validate email
             let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
             if (!emailRegex.test(email)) throw new Error("Invalid email");
-
-            const d = (dob);
 
             // check if existing user
             const existingUser: User | null = await UsersDB.findOne({ email });
