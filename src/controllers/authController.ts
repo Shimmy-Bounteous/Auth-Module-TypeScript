@@ -118,7 +118,7 @@ const login = async (req: Request<{}, {}, User>, res: Response): Promise<Respons
                                 });
 
                             // console.log();
-                            return res.status(201).json({ success: true, message: 'Login Successfull', accessToken });
+                            return res.status(200).json({ success: true, message: 'Login Successfull', accessToken });
                         }
                     }
                 });
@@ -149,10 +149,6 @@ const refresh = async (req: Request, res: Response): Promise<Response | void> =>
         else {
             const user = jwt.verify(refreshToken, JWT_KEY ? JWT_KEY?.toString() : "");
             console.log(user);
-
-            type d = {
-                email: string;
-            }
 
             jwt.verify(
                 refreshToken, JWT_KEY, async (err: VerifyErrors | null, decoded: JwtPayload | string | undefined) => {
