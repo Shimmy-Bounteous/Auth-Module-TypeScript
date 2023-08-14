@@ -3,7 +3,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-const verifyToken = (req: Request, res: Response, next: NextFunction): void => {
+const verifyToken = (req: Request, res: Response, next: NextFunction): Response | void => {
 
     // extract authorization headers from request
     const authHeader = req.headers['authorization'];
@@ -11,14 +11,14 @@ const verifyToken = (req: Request, res: Response, next: NextFunction): void => {
     const token = authHeader?.split(' ')[1];
 
     if (!token) {
-        res.status(401).json({ success: false, message: 'Missing Token' })
+        return res.status(401).json({ success: false, message: 'Missing Token' })
     }
     else {
         const JWT_KEY = process.env.JWT_KEY;
 
         if (!JWT_KEY) {
             console.log('JWT_KEY not available!');
-            res.status(500).json({ success: false, message: 'Server Error. Please try again later.' });
+            return res.status(500).json({ success: false, message: 'Server Error. Please try again later.' });
         }
         else {
             // verify token

@@ -11,10 +11,13 @@ import User from '../types/userType';
 import { RequestBodyForSignup, RequestBodyForLogin } from '../types/runtypes';
 
 // Sign-Up a new user
-const signup = async (req: Request<{}, {}, User>, res: Response): Promise<void> => {
+const signup = async (req: Request<{}, {}, User>, res: Response): Promise<Response | void> => {
     try {
         // Checking if req.body is of the expected type
-        if (RequestBodyForSignup.guard(req.body)) {
+        if (!RequestBodyForSignup.guard(req.body)) {
+            return res.status(400).json({ success: false, message: 'Invalid Request Body' });
+        }
+        else {
             const { name, dob, phoneNo, email, password }: User = req.body;
 
             // regex to validate email
@@ -24,7 +27,7 @@ const signup = async (req: Request<{}, {}, User>, res: Response): Promise<void> 
             // check if existing user
             const existingUser: User | null = await UsersDB.findOne({ email });
             if (existingUser) {
-                res.status(409).json({ success: false, message: 'Email already exists' });
+                return res.status(409).json({ success: false, message: 'Email already exists' });
             }
             else {
                 // encrpyt the password
@@ -48,22 +51,22 @@ const signup = async (req: Request<{}, {}, User>, res: Response): Promise<void> 
                 });
             }
         }
-        else {
-            res.status(400).json({ success: false, message: 'Invalid Request Body' });
-        }
     }
     catch (error) {
         if (error instanceof Error) {
-            res.status(500).json({ success: false, message: error.message });
+            return res.status(500).json({ success: false, message: error.message });
         }
     }
 
 }
 
 // login user
-const login = async (req: Request<{}, {}, User>, res: Response): Promise<void> => {
+const login = async (req: Request<{}, {}, User>, res: Response): Promise<Response | void> => {
     try {
-        if (RequestBodyForLogin.guard(req.body)) {
+        if (!RequestBodyForLogin.guard(req.body)) {
+            return res.status(400).json({ success: false, message: 'Invalid Request Body' });
+        }
+        else {
             const { email, password } = req.body;
 
             // regex to validate email
@@ -73,7 +76,7 @@ const login = async (req: Request<{}, {}, User>, res: Response): Promise<void> =
             // Check if user exits
             const user: User | null = await UsersDB.findOne({ "email": email });
             if (!user) {
-                res.status(401).json({ success: false, message: 'Invalid User Credentials' });
+                return res.status(401).json({ success: false, message: 'Invalid User Credentials' });
             }
             else {
                 // validate password
@@ -121,30 +124,27 @@ const login = async (req: Request<{}, {}, User>, res: Response): Promise<void> =
                 });
             }
         }
-        else {
-            res.status(400).json({ success: false, message: 'Invalid Request Body' });
-        }
     }
     catch (error) {
         if (error instanceof Error) {
-            res.status(500).json({ success: false, message: error.message });
+            return res.status(500).json({ success: false, message: error.message });
         }
     }
 }
 
 // Generate new access token upon refresh token's expiry
-const refresh = async (req: Request, res: Response): Promise<void> => {
+const refresh = async (req: Request, res: Response): Promise<Response | void> => {
     try {
         // If cookies and refresh token doesn't exist
         if (!req.cookies?.jwt) {
-            res.status(403).json({ success: false, message: 'Unauthorized' });
+            return res.status(403).json({ success: false, message: 'Unauthorized' });
         }
         const refreshToken = req.cookies.jwt;
 
         const JWT_KEY = process.env.JWT_KEY;
         if (!JWT_KEY) {
             console.log('JWT_KEY not available!');
-            res.status(500).json({ success: false, message: 'Server error. Please try again later.' })
+            return res.status(500).json({ success: false, message: 'Server error. Please try again later.' })
         }
         else {
             const user = jwt.verify(refreshToken, JWT_KEY ? JWT_KEY?.toString() : "");
@@ -157,7 +157,7 @@ const refresh = async (req: Request, res: Response): Promise<void> => {
             jwt.verify(
                 refreshToken, JWT_KEY, async (err: VerifyErrors | null, decoded: JwtPayload | string | undefined) => {
                     if (err) {
-                        res.status(403).json({ success: false, message: 'Invalid Refresh Token' });
+                        return res.status(403).json({ success: false, message: 'Invalid Refresh Token' });
                     }
                     if (typeof decoded != undefined) {
                         const accessToken = jwt.sign(
@@ -167,7 +167,7 @@ const refresh = async (req: Request, res: Response): Promise<void> => {
                             JWT_KEY,
                             { expiresIn: '1hr' }
                         );
-                        res.status(201).json({ success: true, accessToken });
+                        return res.status(201).json({ success: true, accessToken });
                     }
                 }
             );
@@ -175,7 +175,7 @@ const refresh = async (req: Request, res: Response): Promise<void> => {
     }
     catch (error) {
         if (error instanceof Error) {
-            res.status(500).json({ success: false, message: error.message });
+            return res.status(500).json({ success: false, message: error.message });
         }
     }
 }

@@ -1,6 +1,6 @@
-import {Request, Response, NextFunction} from 'express';
+import { Request, Response, NextFunction } from 'express';
 
-const logRequest = (req: Request, res: Response, next: NextFunction) => {
+const logRequest = (req: Request, res: Response, next: NextFunction): void => {
     console.log(`\nRequest Method: ${req.method} \t Request URL: ${req.url}`);
     if (req.method === "PATCH" || req.method === "POST") {
         console.log(`Request Body:`);
@@ -9,4 +9,4 @@ const logRequest = (req: Request, res: Response, next: NextFunction) => {
     next();
 }
 
-export default logRequest ;
+export default logRequest;

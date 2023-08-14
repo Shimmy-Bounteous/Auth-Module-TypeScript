@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-const dateParser = (req: Request, res: Response, next: NextFunction): void => {
+const dateParser = (req: Request, res: Response, next: NextFunction): Response | void => {
   const dateString: string | undefined | null = req.body.dob;
 
   // If dob is not sent in request body
@@ -12,7 +12,7 @@ const dateParser = (req: Request, res: Response, next: NextFunction): void => {
 
     // Invalid format
     if (dateComponents.length !== 3) {
-      res.status(400).json({ success: false, message: 'Invalid Date Format. The date should be in DD/MM/YYYY format' });
+      return res.status(400).json({ success: false, message: 'Invalid Date Format. The date should be in DD/MM/YYYY format' });
     }
 
     const day = parseInt(dateComponents[0]);
@@ -22,7 +22,7 @@ const dateParser = (req: Request, res: Response, next: NextFunction): void => {
 
     // Invalid date values
     if (isNaN(day) || isNaN(month) || isNaN(year)) {
-      res.status(400).json({ success: false, message: 'Invalid Date Format. The date should be in DD/MM/YYYY format' });
+      return res.status(400).json({ success: false, message: 'Invalid Date Format. The date should be in DD/MM/YYYY format' });
     }
 
     const parsedDate = new Date(Date.UTC(year, month, day, 0, 0, 0));
@@ -31,7 +31,7 @@ const dateParser = (req: Request, res: Response, next: NextFunction): void => {
 
     // Check if the parsed date is valid
     if (isNaN(parsedDate.getTime())) {
-      res.status(400).json({ success: false, message: 'Invalid Date!' });
+      return res.status(400).json({ success: false, message: 'Invalid Date!' });
     }
 
     req.body.dob = parsedDate;
