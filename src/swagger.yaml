@@ -126,9 +126,8 @@ paths:
                 password:
                   type: string
             example:
-              value:
-                email: test@test.com
-                password: Tester@1
+              email: test1@test.com
+              password: Test@1
       responses:
         '200':
           description: Login successful
